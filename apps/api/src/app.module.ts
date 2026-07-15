@@ -4,6 +4,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
+import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ClientsModule } from './modules/clients/clients.module';
 import { DealsModule } from './modules/deals/deals.module';
@@ -25,6 +26,7 @@ import { PrismaModule } from './prisma/prisma.module';
     DealsModule,
     TasksModule,
     NotesModule,
+    AnalyticsModule,
   ],
   providers: [
     // Order matters: authentication first, then role checks on req.user.
