@@ -10,6 +10,7 @@ import {
 } from '@prisma/client';
 import { fakerRU as faker } from '@faker-js/faker';
 import * as bcrypt from 'bcrypt';
+import { AVATAR_COLORS } from '../src/common/constants/avatar-colors';
 
 const prisma = new PrismaClient();
 
@@ -21,8 +22,6 @@ const daysAgo = (days: number) => new Date(NOW.getTime() - days * DAY);
 const addDays = (date: Date, days: number) => new Date(date.getTime() + days * DAY);
 const clampToPast = (date: Date, maxDate = daysAgo(0.05)) =>
   date > maxDate ? maxDate : date;
-
-const AVATAR_COLORS = ['#6366f1', '#0ea5e9', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
 const LEGAL_FORMS = ['ООО', 'АО', 'ИП'];
 
