@@ -89,8 +89,8 @@ const PIPELINE: DealStage[] = [
 
 /** stage -> how many deals to seed in it */
 const STAGE_PLAN: Array<[DealStage, number]> = [
-  [DealStage.WON, 42], // ~35%
-  [DealStage.LOST, 24], // ~20%
+  [DealStage.WON, 60], // ~40%
+  [DealStage.LOST, 30], // ~20%
   [DealStage.LEAD, 12],
   [DealStage.BRIEF, 9],
   [DealStage.PROPOSAL, 9],
@@ -149,7 +149,7 @@ async function main(): Promise<void> {
     ...u,
     passwordHash,
     avatarColor: AVATAR_COLORS[i % AVATAR_COLORS.length],
-    createdAt: daysAgo(270),
+    createdAt: daysAgo(400),
   }));
   await prisma.user.createMany({ data: users });
   const managers = users.filter((u) => u.role === Role.MANAGER);
@@ -163,11 +163,12 @@ async function main(): Promise<void> {
       { value: managers[1], weight: 4 },
       { value: users[0], weight: 1 },
     ]);
-    // Skew client signups to the past so deals spread across all 8 months.
+    // Skew client signups to the past so deals spread across ~13 months and the
+    // analytics "previous period" (6-12 months back) has real numbers to compare to.
     const createdAt = faker.date.between(
       Math.random() < 0.6
-        ? { from: daysAgo(250), to: daysAgo(120) }
-        : { from: daysAgo(120), to: daysAgo(10) },
+        ? { from: daysAgo(390), to: daysAgo(150) }
+        : { from: daysAgo(150), to: daysAgo(10) },
     );
     return {
       id: id(),
@@ -204,21 +205,29 @@ async function main(): Promise<void> {
   const tasks: Prisma.TaskCreateManyInput[] = [];
   const notes: Prisma.NoteCreateManyInput[] = [];
 
-  // Closed deals need room in the past: created >= 45 days ago, so only older clients fit.
-  const olderClients = clients.filter((c) => c.createdAt < daysAgo(60));
+  const oldestClient = clients.reduce((a, b) => (a.createdAt <= b.createdAt ? a : b));
 
   for (const [stage, count] of STAGE_PLAN) {
     for (let i = 0; i < count; i++) {
       const isClosed = stage === DealStage.WON || stage === DealStage.LOST;
-      const client = faker.helpers.arrayElement(isClosed ? olderClients : clients);
+
+      // Closed deals: pick the creation date uniformly across the whole history
+      // FIRST, then a client that already existed — otherwise closures pile up in
+      // recent months and analytics charts get near-empty early months.
+      let client: (typeof clients)[number];
+      let createdAt: Date;
+      if (isClosed) {
+        createdAt = faker.date.between({ from: daysAgo(375), to: daysAgo(45) });
+        const existing = clients.filter((c) => c.createdAt <= createdAt);
+        client = existing.length > 0 ? faker.helpers.arrayElement(existing) : oldestClient;
+        if (createdAt < client.createdAt) createdAt = client.createdAt;
+      } else {
+        client = faker.helpers.arrayElement(clients);
+        createdAt = faker.date.between({ from: client.createdAt, to: daysAgo(3) });
+      }
       // Managers mostly own their clients' deals; sometimes another manager picks one up.
       const ownerId =
         Math.random() < 0.8 ? client.ownerId : faker.helpers.arrayElement(managers).id;
-
-      const earliest = client.createdAt > daysAgo(240) ? client.createdAt : daysAgo(240);
-      const createdAt = isClosed
-        ? faker.date.between({ from: earliest, to: daysAgo(45) })
-        : faker.date.between({ from: earliest, to: daysAgo(3) });
       const closedAt = isClosed
         ? clampToPast(addDays(createdAt, faker.number.int({ min: 10, max: 75 })))
         : null;
