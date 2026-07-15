@@ -7,15 +7,13 @@ import {
 import { Prisma, Role } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { AVATAR_COLORS } from '../../common/constants/avatar-colors';
+import { paginated, Paginated } from '../../common/dto/paginated';
 import { SAFE_USER_SELECT, SafeUser } from '../../common/types/user.types';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { ListUsersQueryDto } from './dto/list-users-query.dto';
 
-export interface PaginatedUsers {
-  data: SafeUser[];
-  meta: { page: number; limit: number; total: number; totalPages: number };
-}
+export type PaginatedUsers = Paginated<SafeUser>;
 
 const BCRYPT_ROUNDS = 10;
 
@@ -24,20 +22,16 @@ export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
   async list(query: ListUsersQueryDto): Promise<PaginatedUsers> {
-    const { page, limit, sortBy, sortOrder } = query;
     const [data, total] = await this.prisma.$transaction([
       this.prisma.user.findMany({
-        skip: (page - 1) * limit,
-        take: limit,
-        orderBy: { [sortBy]: sortOrder },
+        skip: query.skip,
+        take: query.limit,
+        orderBy: { [query.sortBy]: query.sortOrder },
         select: SAFE_USER_SELECT,
       }),
       this.prisma.user.count(),
     ]);
-    return {
-      data,
-      meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
-    };
+    return paginated(data, total, query);
   }
 
   async createManager(dto: CreateUserDto): Promise<SafeUser> {
