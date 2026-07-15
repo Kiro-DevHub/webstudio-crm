@@ -1,0 +1,10 @@
+export enum DealStage {
+  LEAD = 'LEAD',
+  BRIEF = 'BRIEF',
+  PROPOSAL = 'PROPOSAL',
+  CONTRACT = 'CONTRACT',
+  IN_PROGRESS = 'IN_PROGRESS',
+  DELIVERY = 'DELIVERY',
+  WON = 'WON',
+  LOST = 'LOST',
+}
