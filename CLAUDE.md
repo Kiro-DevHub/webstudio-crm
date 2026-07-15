@@ -39,6 +39,18 @@ packages/
   shared/                    # enums (DealStage, Role, TaskStatus), shared types
 ```
 
+## Design direction (locked — stage 5)
+
+The whole product lives in this direction. Do not introduce a second typeface, accent or radius scale.
+
+- **Read:** internal B2B tool for studio managers, Russian UI, used all day, data-dense. Legibility and density beat decoration.
+- **System:** shadcn/ui (`base-nova` style) on Base UI + Tailwind v4. One system — do not mix in another component library.
+- **Type:** `Golos Text` (UI, native Cyrillic) + `JetBrains Mono` (money, dates, IDs, any tabular figure). Self-hosted woff2 in `public/fonts`, no CDN. Use `font-mono` + the `.tabular` utility for numeric columns.
+- **Color:** cool neutrals (hue 258) + **cobalt** as the single accent — light `oklch(0.51 0.18 258)`, dark `oklch(0.7 0.15 258)`. The accent is blue by necessity: green, amber and red are reserved for domain state (WON, overdue, LOST), so an accent in those hues would destroy the semantics. Never add a second accent.
+- **Density:** compact. Rows 32px, controls `h-8` by default, base spacing step 4px. Prefer hairline separators (`border-b`, `divide-y`) over cards; use a card only where elevation marks real hierarchy.
+- **Radius:** `--radius: 0.5rem` (8px), one scale everywhere.
+- **Themes:** light and dark are designed together via CSS variables, toggled by `class="dark"` on `<html>`, persisted in `localStorage`. Every token pair is verified at WCAG AA (4.5:1 text, 3:1 focus ring) in both themes. Re-verify when touching tokens.
+
 ## Domain rules
 
 - Deal pipeline stages: `LEAD → BRIEF → PROPOSAL → CONTRACT → IN_PROGRESS → DELIVERY → WON | LOST`

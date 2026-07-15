@@ -1,10 +1,41 @@
 <!doctype html>
-<html lang="en">
+<html lang="ru">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Kept in step with --background by applyTheme(); the value here is the light default. -->
+    <meta name="theme-color" content="#fdfdff" />
     <title>WebStudio CRM</title>
+    <link
+      rel="preload"
+      href="/fonts/golos-text-cyrillic.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <script>
+      // Runs before first paint so a dark-theme reload never flashes white.
+      // Kept in sync with src/features/theme/theme.ts.
+      (function () {
+        try {
+          var stored = localStorage.getItem('crm-theme');
+          var theme =
+            stored === 'light' || stored === 'dark'
+              ? stored
+              : window.matchMedia('(prefers-color-scheme: dark)').matches
+                ? 'dark'
+                : 'light';
+          document.documentElement.classList.toggle('dark', theme === 'dark');
+          document.documentElement.style.colorScheme = theme;
+          document
+            .querySelector('meta[name="theme-color"]')
+            .setAttribute('content', theme === 'dark' ? '#0d1013' : '#fdfdff');
+        } catch (e) {
+          /* private mode: fall back to the light default */
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
