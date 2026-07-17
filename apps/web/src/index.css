@@ -72,6 +72,8 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -108,6 +110,9 @@
   --accent-foreground: oklch(0.31 0.05 258);
   --destructive: oklch(0.52 0.21 27.3);
   --destructive-foreground: oklch(0.99 0.005 258);
+  /* Domain state: WON is green, overdue is amber. Kept out of the accent palette on purpose. */
+  --success: oklch(0.5 0.13 155);
+  --warning: oklch(0.5 0.11 70);
   --border: oklch(0.912 0.005 258);
   --input: oklch(0.912 0.005 258);
   --ring: oklch(0.51 0.18 258);
@@ -135,6 +140,8 @@
   --accent-foreground: oklch(0.9 0.05 258);
   --destructive: oklch(0.7 0.19 22.2);
   --destructive-foreground: oklch(0.17 0.02 22.2);
+  --success: oklch(0.74 0.14 155);
+  --warning: oklch(0.78 0.13 80);
   --border: oklch(1 0 0 / 11%);
   --input: oklch(1 0 0 / 16%);
   --ring: oklch(0.7 0.15 258);
