@@ -8,3 +8,5 @@ allowBuilds:
   bcrypt: true
   unrs-resolver: true
   '@scarf/scarf': false
+  # Node-based tests use msw/node, which needs no postinstall worker script.
+  msw: false

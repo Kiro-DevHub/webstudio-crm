@@ -2,6 +2,7 @@ import { DealStage, TaskStatus } from '@crm/shared';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { getApiErrorMessage } from '@/lib/api-error';
+import { moveDealInBoard } from './board-optimistic';
 import {
   changeDealStage,
   createDeal,
@@ -57,29 +58,6 @@ export function useCreateDeal() {
       void queryClient.invalidateQueries({ queryKey: ['clients'] });
     },
   });
-}
-
-/** Applies a stage change to one cached board: move between columns or retire into WON/LOST. */
-function moveDealInBoard(board: DealsBoard, id: string, stage: DealStage): DealsBoard {
-  const deal = board.deals.find((item) => item.id === id);
-  if (deal === undefined) return board;
-
-  if (stage === DealStage.WON || stage === DealStage.LOST) {
-    const key = stage === DealStage.WON ? 'won' : 'lost';
-    const summary = board.closed[key];
-    return {
-      deals: board.deals.filter((item) => item.id !== id),
-      closed: {
-        ...board.closed,
-        [key]: { count: summary.count + 1, amount: summary.amount + deal.amount },
-      },
-    };
-  }
-
-  return {
-    ...board,
-    deals: board.deals.map((item) => (item.id === id ? { ...item, stage } : item)),
-  };
 }
 
 /**
