@@ -279,6 +279,71 @@ describe('Analytics (e2e)', () => {
     });
   });
 
+  describe('summary is consistent with the other read models', () => {
+    // Seed-like realistic fixture (WON/LOST/open across months), read through every endpoint over
+    // the same window. We assert the numbers agree with each other rather than hard-code them, so
+    // this survives data changes. The window is scoped to this test's owner, which no other e2e
+    // touches, so a concurrently-running suite can't shift the totals between calls.
+    it('cross-checks revenue, won counts, conversion and averages across endpoints', async () => {
+      const [summaryRes, monthsRes, managersRes, lostRes, funnelRes] = await Promise.all([
+        get(`/api/analytics/summary?${owned()}`, adminToken).expect(200),
+        get(`/api/analytics/revenue-by-month?${owned()}`, adminToken).expect(200),
+        get(`/api/analytics/top-managers?${owned()}`, adminToken).expect(200),
+        get(`/api/analytics/lost-reasons?${owned()}`, adminToken).expect(200),
+        get(`/api/analytics/funnel?${owned()}`, adminToken).expect(200),
+      ]);
+
+      const summary = body<SummaryBody>(summaryRes);
+      const months = body<MonthPoint[]>(monthsRes);
+      const managers = body<ManagerRow[]>(managersRes);
+      const lost = body<LostReasonRow[]>(lostRes);
+      const funnel = body<FunnelRow[]>(funnelRes);
+
+      const revenueFromMonths = months.reduce((sum, m) => sum + m.revenue, 0);
+      const wonFromMonths = months.reduce((sum, m) => sum + m.dealsWon, 0);
+      const managerRevenue = managers.reduce((sum, m) => sum + m.revenue, 0);
+      const managerWon = managers.reduce((sum, m) => sum + m.dealsWon, 0);
+      const managerNew = managers.reduce((sum, m) => sum + m.newDeals, 0);
+      const lostCount = lost.reduce((sum, r) => sum + r.count, 0);
+
+      // Revenue is the sum of WON amounts, however you slice it: by month or by manager.
+      expect(summary.revenue.value).toBe(revenueFromMonths);
+      expect(summary.revenue.value).toBe(managerRevenue);
+
+      // WON deal counts agree between the month series and the manager rollup.
+      expect(wonFromMonths).toBe(managerWon);
+      expect(wonFromMonths).toBeGreaterThan(0);
+
+      // New deals in the period equal the per-manager new-deal counts and the funnel total
+      // (the funnel buckets every deal created in the period by its current stage).
+      expect(summary.newDeals.value).toBe(managerNew);
+      const funnelTotal = funnel.reduce((sum, f) => sum + f.count, 0);
+      expect(funnelTotal).toBe(summary.newDeals.value);
+
+      // Average WON amount is revenue over WON count, rounded to a whole kopeck.
+      expect(summary.avgWonAmount.value).toBe(Math.round(summary.revenue.value / wonFromMonths));
+
+      // Conversion is WON out of everything closed (WON + LOST) in the period.
+      const closed = wonFromMonths + lostCount;
+      const expectedConversion =
+        closed === 0 ? 0 : Math.round((wonFromMonths / closed) * 1000) / 10;
+      expect(summary.conversionRate.value).toBe(expectedConversion);
+
+      // Every metric is a real, non-negative number.
+      for (const metric of [
+        summary.revenue,
+        summary.newDeals,
+        summary.conversionRate,
+        summary.avgWonAmount,
+        summary.activeDeals,
+        summary.overdueTasks,
+      ]) {
+        expect(Number.isFinite(metric.value)).toBe(true);
+        expect(metric.value).toBeGreaterThanOrEqual(0);
+      }
+    });
+  });
+
   describe('GET /api/analytics/revenue-by-month', () => {
     it('returns every month of the range including zero months', async () => {
       const res = await get(`/api/analytics/revenue-by-month?${owned()}`, adminToken).expect(200);
