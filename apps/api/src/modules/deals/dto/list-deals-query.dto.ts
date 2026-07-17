@@ -1,7 +1,16 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { DealStage } from '@prisma/client';
 import { Type } from 'class-transformer';
-import { IsEnum, IsIn, IsInt, IsNotEmpty, IsOptional, IsString, Min } from 'class-validator';
+import {
+  IsEnum,
+  IsIn,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MaxLength,
+  Min,
+} from 'class-validator';
 import { PaginationQueryDto } from '../../../common/dto/pagination-query.dto';
 
 export const DEAL_SORT_FIELDS = [
@@ -24,6 +33,12 @@ export class ListDealsQueryDto extends PaginationQueryDto {
   @IsOptional()
   @IsEnum(DealStage)
   stage?: DealStage;
+
+  @ApiPropertyOptional({ description: 'Case-insensitive search over title and client companyName' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  search?: string;
 
   @ApiPropertyOptional()
   @IsOptional()

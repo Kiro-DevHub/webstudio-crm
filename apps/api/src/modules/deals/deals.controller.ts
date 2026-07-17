@@ -15,7 +15,8 @@ import { Deal } from '@prisma/client';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Paginated } from '../../common/dto/paginated';
 import type { SafeUser } from '../../common/types/user.types';
-import { DealsService } from './deals.service';
+import { DealsBoard, DealsService } from './deals.service';
+import { BoardQueryDto } from './dto/board-query.dto';
 import { ChangeDealStageDto } from './dto/change-deal-stage.dto';
 import { CreateDealDto } from './dto/create-deal.dto';
 import { ListDealsQueryDto } from './dto/list-deals-query.dto';
@@ -31,6 +32,14 @@ export class DealsController {
   @ApiOperation({ summary: 'List deals with pagination and filters' })
   list(@Query() query: ListDealsQueryDto): Promise<Paginated<Deal>> {
     return this.dealsService.list(query);
+  }
+
+  @Get('board')
+  @ApiOperation({
+    summary: 'Kanban board: all open deals with overdue-task counts, plus WON/LOST totals',
+  })
+  board(@Query() query: BoardQueryDto): Promise<DealsBoard> {
+    return this.dealsService.board(query);
   }
 
   @Get(':id')
