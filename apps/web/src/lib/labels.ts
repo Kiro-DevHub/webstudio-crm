@@ -1,4 +1,10 @@
-import { ClientSource, DealStage } from '@crm/shared';
+import { ClientSource, DealStage, TaskStatus } from '@crm/shared';
+
+export const TASK_STATUS_LABELS: Record<TaskStatus, string> = {
+  [TaskStatus.TODO]: 'К выполнению',
+  [TaskStatus.IN_PROGRESS]: 'В работе',
+  [TaskStatus.DONE]: 'Выполнена',
+};
 
 export const CLIENT_SOURCE_LABELS: Record<ClientSource, string> = {
   [ClientSource.WEBSITE]: 'Сайт',
@@ -59,9 +65,49 @@ const compactMoneyFormatter = new Intl.NumberFormat('ru-RU', {
   maximumFractionDigits: 1,
 });
 
-/** Column headers and drop zones: "4,5 млн ₽" instead of a nine-digit sum. */
+/** Column headers, chart axes and drop zones: "4,5 млн ₽" instead of a nine-digit sum. */
 export function formatMoneyCompact(kopecks: number): string {
   return compactMoneyFormatter.format(kopecks / 100);
+}
+
+const numberFormatter = new Intl.NumberFormat('ru-RU');
+
+/** Plain counts with a thousands separator: "1 284". */
+export function formatNumber(value: number): string {
+  return numberFormatter.format(value);
+}
+
+const percentFormatter = new Intl.NumberFormat('ru-RU', {
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 1,
+});
+
+/** A ready-made percentage value (already 0–100), e.g. a conversion rate: "42,5 %". */
+export function formatPercent(value: number): string {
+  return `${percentFormatter.format(value)} %`;
+}
+
+const signedPercentFormatter = new Intl.NumberFormat('ru-RU', {
+  signDisplay: 'exceptZero',
+  maximumFractionDigits: 1,
+});
+
+/** A KPI delta with an explicit sign for the trend indicator: "+12,4 %", "−3 %". */
+export function formatDeltaPct(value: number): string {
+  return `${signedPercentFormatter.format(value)} %`;
+}
+
+const monthShortFormatter = new Intl.DateTimeFormat('ru-RU', { month: 'short' });
+const monthLongFormatter = new Intl.DateTimeFormat('ru-RU', { month: 'long', year: 'numeric' });
+
+/** A `YYYY-MM` bucket as a short month tick: "2026-01" -> "янв." */
+export function formatMonthShort(month: string): string {
+  return monthShortFormatter.format(new Date(`${month}-01T12:00:00`));
+}
+
+/** A `YYYY-MM` bucket spelled out for a tooltip heading: "2026-01" -> "январь 2026 г." */
+export function formatMonthLong(month: string): string {
+  return monthLongFormatter.format(new Date(`${month}-01T12:00:00`));
 }
 
 const relativeFormatter = new Intl.RelativeTimeFormat('ru-RU', { numeric: 'auto' });
