@@ -59,6 +59,11 @@ export class ClientsService {
           orderBy: { createdAt: 'desc' },
           select: { id: true, title: true, amount: true, stage: true, createdAt: true },
         },
+        activities: {
+          orderBy: { createdAt: 'desc' },
+          take: 20,
+          include: { user: { select: SAFE_USER_SELECT } },
+        },
       },
     });
     if (!client) {

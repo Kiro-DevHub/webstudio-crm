@@ -7,7 +7,7 @@ import type { SafeUser } from '../../common/types/user.types';
 import { CreateUserDto } from './dto/create-user.dto';
 import { ListUsersQueryDto } from './dto/list-users-query.dto';
 import { UsersService } from './users.service';
-import type { PaginatedUsers } from './users.service';
+import type { PaginatedUsers, UserLite } from './users.service';
 
 @ApiTags('users')
 @ApiBearerAuth()
@@ -20,6 +20,15 @@ export class UsersController {
   @ApiOperation({ summary: 'List users (ADMIN only)' })
   list(@Query() query: ListUsersQueryDto): Promise<PaginatedUsers> {
     return this.usersService.list(query);
+  }
+
+  @Get('lite')
+  @Roles()
+  @ApiOperation({
+    summary: 'List active users (id, name, avatarColor, role) for owner/assignee pickers',
+  })
+  listLite(): Promise<UserLite[]> {
+    return this.usersService.listLite();
   }
 
   @Post()

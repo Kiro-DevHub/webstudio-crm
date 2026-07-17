@@ -15,11 +15,22 @@ import { ListUsersQueryDto } from './dto/list-users-query.dto';
 
 export type PaginatedUsers = Paginated<SafeUser>;
 
+export type UserLite = Pick<SafeUser, 'id' | 'name' | 'avatarColor' | 'role'>;
+
 const BCRYPT_ROUNDS = 10;
 
 @Injectable()
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
+
+  /** Active users for owner/assignee pickers — every authenticated role needs this, not just ADMIN. */
+  async listLite(): Promise<UserLite[]> {
+    return this.prisma.user.findMany({
+      where: { isActive: true },
+      orderBy: { name: 'asc' },
+      select: { id: true, name: true, avatarColor: true, role: true },
+    });
+  }
 
   async list(query: ListUsersQueryDto): Promise<PaginatedUsers> {
     const [data, total] = await this.prisma.$transaction([
