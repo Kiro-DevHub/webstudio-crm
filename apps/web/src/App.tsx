@@ -6,6 +6,7 @@ import { ProtectedRoute } from '@/routes/ProtectedRoute';
 import { RoleRoute } from '@/routes/RoleRoute';
 import { ClientsPage } from '@/pages/ClientsPage';
 import { DashboardPage } from '@/pages/DashboardPage';
+import { DealPage } from '@/pages/DealPage';
 import { DealsPage } from '@/pages/DealsPage';
 import { LoginPage } from '@/pages/LoginPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
@@ -24,6 +25,7 @@ function App() {
             <Route index element={<DashboardPage />} />
             <Route path="clients" element={<ClientsPage />} />
             <Route path="deals" element={<DealsPage />} />
+            <Route path="deals/:id" element={<DealPage />} />
             <Route path="tasks" element={<TasksPage />} />
 
             <Route element={<RoleRoute allow={[Role.ADMIN]} />}>
