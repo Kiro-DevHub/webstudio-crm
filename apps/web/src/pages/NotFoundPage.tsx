@@ -9,7 +9,8 @@ export function NotFoundPage() {
       <p className="text-sm text-muted-foreground">
         Такого раздела нет. Возможно, ссылка устарела или в адресе опечатка.
       </p>
-      <Button render={<Link to="/" />} className="mt-1">
+      {/* Rendered as a Link (an <a>), so tell Base UI it is not a native <button>. */}
+      <Button render={<Link to="/" />} nativeButton={false} className="mt-1">
         Вернуться на обзор
       </Button>
     </div>

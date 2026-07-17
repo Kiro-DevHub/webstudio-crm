@@ -93,7 +93,8 @@ export function buildClientsColumns({
     },
     {
       id: 'actions',
-      header: '',
+      // A screen-reader-only header keeps the column from being announced as empty.
+      header: () => <span className="sr-only">Действия</span>,
       enableSorting: false,
       cell: ({ row }) => {
         const client = row.original;
