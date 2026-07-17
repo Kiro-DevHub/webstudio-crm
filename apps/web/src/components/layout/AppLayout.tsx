@@ -32,7 +32,9 @@ export function AppLayout() {
   if (user === null) return null;
 
   return (
-    <div className="flex min-h-dvh bg-background">
+    // h-dvh (not min-h): pages scroll inside <main>, and full-height layouts like the
+    // deals board can rely on `h-full` to pin their own internal scroll areas.
+    <div className="flex h-dvh bg-background">
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-primary focus:px-3 focus:py-1.5 focus:text-sm focus:text-primary-foreground"

@@ -14,6 +14,11 @@ export const queryClient = new QueryClient({
       staleTime: 30_000,
       refetchOnWindowFocus: false,
     },
-    mutations: { retry: false },
+    /**
+     * networkMode 'always': the default 'online' mode PAUSES mutations while offline,
+     * so an optimistic kanban move would silently hang instead of rolling back. Firing
+     * anyway turns "no connection" into an immediate error -> onError -> rollback + toast.
+     */
+    mutations: { retry: false, networkMode: 'always' },
   },
 });
