@@ -1,5 +1,7 @@
-import { useCallback, useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Loader2 } from 'lucide-react';
+import { Suspense, useCallback, useState } from 'react';
+import { Outlet, useLocation } from 'react-router-dom';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { useAuth } from '@/features/auth/useAuth';
 import { MobileNavDrawer } from './MobileNavDrawer';
 import { Sidebar } from './Sidebar';
@@ -11,8 +13,19 @@ function readStoredCollapsed(): boolean {
   return localStorage.getItem(COLLAPSED_STORAGE_KEY) === 'true';
 }
 
+/** Fills the content area (not the whole viewport) while a lazy route chunk loads. */
+function RouteFallback() {
+  return (
+    <div className="flex min-h-64 items-center justify-center" role="status">
+      <Loader2 aria-hidden="true" className="size-5 animate-spin text-muted-foreground" />
+      <span className="sr-only">Загрузка раздела…</span>
+    </div>
+  );
+}
+
 export function AppLayout() {
   const { user } = useAuth();
+  const location = useLocation();
   const [collapsed, setCollapsed] = useState(readStoredCollapsed);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
@@ -48,7 +61,14 @@ export function AppLayout() {
       <div className="flex min-w-0 flex-1 flex-col">
         <Topbar user={user} onOpenMobileNav={openMobileNav} />
         <main id="main" className="flex-1 overflow-y-auto p-4 lg:p-6">
-          <Outlet />
+          {/* Keyed by path: a page that crashes recovers as soon as the user navigates elsewhere,
+              while the sidebar and topbar stay usable. The inner Suspense keeps that same shell
+              on screen while a lazy route chunk loads. */}
+          <ErrorBoundary key={location.pathname}>
+            <Suspense fallback={<RouteFallback />}>
+              <Outlet />
+            </Suspense>
+          </ErrorBoundary>
         </main>
       </div>
     </div>
