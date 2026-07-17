@@ -20,7 +20,7 @@ import {
   formatDateTime,
   formatMoney,
 } from '@/lib/labels';
-import { describeActivity } from './activity-text';
+import { describeActivity } from '@/lib/activity';
 import type { ClientListItem } from './clients.types';
 import { useClient } from './useClients';
 

@@ -1,13 +1,27 @@
 import { ActivityType, DealStage } from '@crm/shared';
+import {
+  ArrowRightLeft,
+  BadgePlus,
+  CheckCircle2,
+  ListPlus,
+  StickyNote,
+  UserPlus,
+  type LucideIcon,
+} from 'lucide-react';
 import { DEAL_STAGE_LABELS } from '@/lib/labels';
-import type { ClientActivity } from './clients.types';
+
+/** The slice of an Activity record the feed needs; both clients and deals satisfy it. */
+export interface ActivityLike {
+  type: ActivityType;
+  payload: Record<string, unknown>;
+}
 
 function isDealStage(value: unknown): value is DealStage {
   return typeof value === 'string' && value in DealStage;
 }
 
 /** Turns a raw Activity record into one Russian sentence for the feed. */
-export function describeActivity(activity: ClientActivity): string {
+export function describeActivity(activity: ActivityLike): string {
   const { type, payload } = activity;
   switch (type) {
     case ActivityType.CLIENT_CREATED:
@@ -33,3 +47,12 @@ export function describeActivity(activity: ClientActivity): string {
       return 'Событие';
   }
 }
+
+export const ACTIVITY_ICONS: Record<ActivityType, LucideIcon> = {
+  [ActivityType.DEAL_CREATED]: BadgePlus,
+  [ActivityType.STAGE_CHANGED]: ArrowRightLeft,
+  [ActivityType.TASK_CREATED]: ListPlus,
+  [ActivityType.TASK_COMPLETED]: CheckCircle2,
+  [ActivityType.NOTE_ADDED]: StickyNote,
+  [ActivityType.CLIENT_CREATED]: UserPlus,
+};

@@ -1,5 +1,8 @@
 import type { ActivityType, ClientSource, DealStage } from '@crm/shared';
 import type { UserLite } from '@/features/users/users.types';
+import type { Paginated, PaginationMeta, SortOrder } from '@/lib/pagination';
+
+export type { Paginated, PaginationMeta, SortOrder };
 
 export interface ClientListItem {
   id: string;
@@ -45,7 +48,6 @@ export const CLIENT_SORT_FIELDS = [
   'email',
 ] as const;
 export type ClientSortField = (typeof CLIENT_SORT_FIELDS)[number];
-export type SortOrder = 'asc' | 'desc';
 
 export interface ClientsListParams {
   page: number;
@@ -55,18 +57,6 @@ export interface ClientsListParams {
   search?: string;
   source?: ClientSource;
   ownerId?: string;
-}
-
-export interface PaginationMeta {
-  page: number;
-  limit: number;
-  total: number;
-  totalPages: number;
-}
-
-export interface Paginated<T> {
-  data: T[];
-  meta: PaginationMeta;
 }
 
 export interface ClientFormInput {
