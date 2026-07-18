@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { UserAvatar } from '@/components/layout/UserAvatar';
 import { useAuth } from '@/features/auth/useAuth';
+import { isTaskOverdue } from '@/features/tasks/group-tasks';
 import { getApiErrorMessage } from '@/lib/api-error';
 import { formatDate } from '@/lib/labels';
 import { cn } from '@/lib/utils';
@@ -27,10 +28,6 @@ function defaultDueDate(): string {
   const date = new Date();
   date.setDate(date.getDate() + 3);
   return date.toISOString().slice(0, 10);
-}
-
-function isOverdue(task: DealTask): boolean {
-  return task.status !== TaskStatus.DONE && new Date(task.dueDate).getTime() < Date.now();
 }
 
 interface DealTasksCardProps {
@@ -87,7 +84,7 @@ export function DealTasksCard({ dealId, tasks }: DealTasksCardProps) {
         <ul className="flex flex-col divide-y divide-border">
           {tasks.map((task) => {
             const done = task.status === TaskStatus.DONE;
-            const overdue = isOverdue(task);
+            const overdue = isTaskOverdue(task);
             return (
               <li key={task.id} className="flex items-center gap-2.5 py-2 first:pt-0 last:pb-0">
                 <Checkbox
