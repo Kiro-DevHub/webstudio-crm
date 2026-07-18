@@ -1,5 +1,7 @@
 # Деплой
 
+> Живое демо (см. [README](../README.md)) сейчас развёрнуто проще, чем описано ниже: API — на Render (`webstudio-crm.onrender.com`), web — на Vercel (`webstudio-crm-web.vercel.app`), без VPS и своего домена. Render засыпает при простое (см. заметку про cold start в README). Гайд ниже — вариант self-host на своём VPS и домене через Docker + Caddy, если такой контроль нужен; шаг 3 (Vercel) актуален для обоих вариантов.
+
 API + PostgreSQL + Caddy живут на VPS в Docker; web — статика на Vercel. Фронт и API **не обязаны** делить один домен: при `NODE_ENV=production` (его ставит Dockerfile, Render ставит его сам) refresh-cookie выставляется с `SameSite=None; Secure`, поэтому cross-site запросы (например, Vercel ↔ Render) работают. Обязательные условия: обе стороны на HTTPS (иначе браузер отклонит Secure-cookie) и origin фронта перечислен в `CORS_ORIGIN`. В dev (`NODE_ENV` не задан) cookie — `SameSite=Lax` без `Secure`, так что обычный http://localhost работает как раньше.
 
 ## 1. VPS: сервер и DNS
@@ -53,6 +55,7 @@ docker compose -f docker-compose.prod.yml --env-file .env.prod exec api node dis
 1. Импортировать репозиторий в Vercel, **Root Directory** — `apps/web`. Vercel сам определит Vite-проект (`build`, `dist`).
 2. Project Settings → Environment Variables:
    - `VITE_API_URL` = `https://api.your-domain.com/api`
+   - Для публичного демо (как на живом деплое в README) — ещё `VITE_DEMO_EMAIL` и `VITE_DEMO_PASSWORD` (см. `apps/web/.env.production.example`), иначе кнопка «Войти как демо» на `/login` собирается скрытой (`getDemoCredentials()` возвращает `null` без этих переменных). Не задавайте их, если демо-вход на этом деплое не нужен.
 3. Project Settings → Domains: добавить `app.your-domain.com`, указать CNAME на `cname.vercel-dns.com` в DNS-панели домена.
 4. Задеплоить (push в `main` триггерит прод-деплой; PR получают preview-деплои автоматически).
 
