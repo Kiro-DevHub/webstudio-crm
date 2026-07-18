@@ -5,6 +5,7 @@ import * as bcrypt from 'bcrypt';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from '../src/app.module';
+import { buildRefreshCookieOptions } from '../src/modules/auth/auth.constants';
 import { configureApp } from '../src/setup-app';
 
 const PASSWORD = 'E2ePassword123!';
@@ -128,10 +129,12 @@ describe('Auth & Users (e2e)', () => {
       expect(accessToken.split('.')).toHaveLength(3);
       expect(JSON.stringify(res.body)).not.toContain('passwordHash');
 
+      // Jest runs with NODE_ENV=test, so the served cookie must match the
+      // non-production branch: Lax without Secure (plain-http localhost works).
       const cookie = refreshSetCookie(res);
       expect(cookie).toContain('HttpOnly');
-      expect(cookie).toContain('Secure');
-      expect(cookie).toContain('SameSite=Strict');
+      expect(cookie).not.toContain('Secure');
+      expect(cookie).toContain('SameSite=Lax');
       expect(cookie).toContain('Path=/api/auth');
     });
 
@@ -185,6 +188,26 @@ describe('Auth & Users (e2e)', () => {
       expect(me.role).toBe(Role.MANAGER);
       expect(me.passwordHash).toBeUndefined();
       expect(me.refreshTokenHash).toBeUndefined();
+    });
+  });
+
+  describe('refresh cookie attributes per environment', () => {
+    it('production: SameSite=None + Secure so the cookie survives cross-site Vercel → Render requests', () => {
+      expect(buildRefreshCookieOptions(true)).toEqual({
+        httpOnly: true,
+        secure: true,
+        sameSite: 'none',
+        path: '/api/auth',
+      });
+    });
+
+    it('non-production: SameSite=Lax without Secure so plain-http localhost keeps the cookie', () => {
+      expect(buildRefreshCookieOptions(false)).toEqual({
+        httpOnly: true,
+        secure: false,
+        sameSite: 'lax',
+        path: '/api/auth',
+      });
     });
   });
 

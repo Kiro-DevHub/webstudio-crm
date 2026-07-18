@@ -1,6 +1,6 @@
 # Деплой
 
-API + PostgreSQL + Caddy живут на VPS в Docker; web — статика на Vercel. `app.your-domain.com` и `api.your-domain.com` должны быть поддоменами **одного** домена — refresh-cookie выставлен с `sameSite: 'strict'`, а это требование одного registrable domain (кросс-доменные поддомены — ок, кросс-сайтовые домены — нет).
+API + PostgreSQL + Caddy живут на VPS в Docker; web — статика на Vercel. Фронт и API **не обязаны** делить один домен: при `NODE_ENV=production` (его ставит Dockerfile, Render ставит его сам) refresh-cookie выставляется с `SameSite=None; Secure`, поэтому cross-site запросы (например, Vercel ↔ Render) работают. Обязательные условия: обе стороны на HTTPS (иначе браузер отклонит Secure-cookie) и origin фронта перечислен в `CORS_ORIGIN`. В dev (`NODE_ENV` не задан) cookie — `SameSite=Lax` без `Secure`, так что обычный http://localhost работает как раньше.
 
 ## 1. VPS: сервер и DNS
 
