@@ -23,6 +23,22 @@ const addDays = (date: Date, days: number) => new Date(date.getTime() + days * D
 const clampToPast = (date: Date, maxDate = daysAgo(0.05)) =>
   date > maxDate ? maxDate : date;
 
+/**
+ * Due date for a task that is still open (not DONE): weighted so overdue tasks stay a
+ * believable minority of the demo data instead of piling up. ~28% land in the past
+ * (overdue), a few are due later today, the rest are upcoming.
+ */
+function dueDateForOpenTask(): Date {
+  const roll = Math.random();
+  if (roll < 0.28) return daysAgo(faker.number.int({ min: 1, max: 20 }));
+  if (roll < 0.33) {
+    const today = new Date(NOW);
+    today.setHours(faker.number.int({ min: 9, max: 20 }), 0, 0, 0);
+    return today;
+  }
+  return addDays(NOW, faker.number.int({ min: 1, max: 30 }));
+}
+
 const LEGAL_FORMS = ['ООО', 'АО', 'ИП'];
 
 const SERVICES = [
@@ -289,7 +305,9 @@ async function main(): Promise<void> {
       for (let t = 0; t < taskCount; t++) {
         const taskCreatedAt = faker.date.between({ from: createdAt, to: lastTouch });
         const done = isClosed ? Math.random() < 0.85 : Math.random() < 0.35;
-        const dueDate = addDays(taskCreatedAt, faker.number.int({ min: 2, max: 21 }));
+        const dueDate = done
+          ? addDays(taskCreatedAt, faker.number.int({ min: 2, max: 21 }))
+          : dueDateForOpenTask();
         const task: Prisma.TaskCreateManyInput = {
           id: id(),
           title: faker.helpers.arrayElement(TASK_TITLES),
@@ -356,16 +374,17 @@ async function main(): Promise<void> {
   for (let t = 0; t < 10; t++) {
     const assignee = faker.helpers.arrayElement(users);
     const taskCreatedAt = faker.date.between({ from: daysAgo(40), to: daysAgo(1) });
+    const standaloneDone = Math.random() < 0.35;
     tasks.push({
       id: id(),
       title: faker.helpers.arrayElement(TASK_TITLES),
       description: null,
-      status: faker.helpers.arrayElement([
-        TaskStatus.TODO,
-        TaskStatus.IN_PROGRESS,
-        TaskStatus.DONE,
-      ]),
-      dueDate: addDays(taskCreatedAt, faker.number.int({ min: -5, max: 20 })),
+      status: standaloneDone
+        ? TaskStatus.DONE
+        : faker.helpers.arrayElement([TaskStatus.TODO, TaskStatus.IN_PROGRESS]),
+      dueDate: standaloneDone
+        ? addDays(taskCreatedAt, faker.number.int({ min: -5, max: 20 }))
+        : dueDateForOpenTask(),
       dealId: null,
       assigneeId: assignee.id,
       createdAt: taskCreatedAt,
