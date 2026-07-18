@@ -3,7 +3,9 @@ dist/
 build/
 coverage/
 .env
-.env.*.local
+.env.*
+!.env.example
+!.env.*.example
 *.tsbuildinfo
 .turbo/
 .DS_Store
