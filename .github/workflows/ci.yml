@@ -41,6 +41,12 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      # @prisma/client's postinstall can't resolve the `prisma` CLI (a devDependency
+      # of apps/api only) from its own nested location under pnpm's isolated
+      # node_modules, so it silently skips codegen. Generate explicitly instead of
+      # relying on postinstall.
+      - run: pnpm --filter @crm/api exec prisma generate
+
       # Consumed as prebuilt types/JS by api and web; must exist before their lint/build.
       - run: pnpm --filter @crm/shared build
 
