@@ -188,6 +188,18 @@ describe('Analytics (e2e)', () => {
       },
     });
 
+    // A second task, also due inside the window, but completed — must never count as overdue.
+    await prisma.task.create({
+      data: {
+        title: `Выполненная задача ${suffix}`,
+        status: TaskStatus.DONE,
+        dueDate: new Date('2024-04-02T00:00:00.000Z'),
+        dealId: dealIds[1],
+        assigneeId: managerId,
+        createdAt: new Date('2024-03-01T00:00:00.000Z'),
+      },
+    });
+
     await prisma.activity.createMany({
       data: [
         {

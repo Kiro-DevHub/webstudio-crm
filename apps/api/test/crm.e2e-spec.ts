@@ -609,5 +609,31 @@ describe('CRM CRUD modules (e2e)', () => {
       expect(list.data.map((t) => t.id)).toContain(overdueId);
       expect(list.data.every((t) => t.status !== TaskStatus.DONE)).toBe(true);
     });
+
+    it('GET /api/tasks?overdue=true excludes a DONE task even with a past due date', async () => {
+      const created = await request(server)
+        .post('/api/tasks')
+        .set('Authorization', `Bearer ${ownerToken}`)
+        .send({
+          title: 'Выполненная просроченная задача',
+          dueDate: new Date(Date.now() - 86_400_000).toISOString(),
+        });
+      const doneOverdueId = body<TaskBody>(created).id;
+
+      await request(server)
+        .patch(`/api/tasks/${doneOverdueId}`)
+        .set('Authorization', `Bearer ${ownerToken}`)
+        .send({ status: TaskStatus.DONE })
+        .expect(200);
+
+      const res = await request(server)
+        .get('/api/tasks')
+        .query({ overdue: true, assigneeId: ownerId, limit: 100 })
+        .set('Authorization', `Bearer ${ownerToken}`);
+
+      expect(res.status).toBe(200);
+      const list = body<Paginated<TaskBody>>(res);
+      expect(list.data.map((t) => t.id)).not.toContain(doneOverdueId);
+    });
   });
 });
