@@ -1,7 +1,7 @@
-import { Menu as MenuIcon, Search } from 'lucide-react';
+import { Menu as MenuIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import type { AuthUser } from '@/features/auth/auth.types';
+import { GlobalSearch } from '@/features/search/GlobalSearch';
 import { ThemeToggle } from './ThemeToggle';
 import { UserMenu } from './UserMenu';
 
@@ -23,22 +23,7 @@ export function Topbar({ user, onOpenMobileNav }: TopbarProps) {
         <MenuIcon aria-hidden="true" strokeWidth={1.75} />
       </Button>
 
-      <div className="relative w-full max-w-72">
-        <Search
-          aria-hidden="true"
-          className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground"
-          strokeWidth={1.75}
-        />
-        {/* Disabled on purpose: search arrives with the data stages, and a control that
-            looks live but does nothing is worse than one that says it is not ready. */}
-        <Input
-          type="search"
-          disabled
-          placeholder="Поиск (скоро)"
-          aria-label="Поиск по CRM (появится позже)"
-          className="pl-8"
-        />
-      </div>
+      <GlobalSearch />
 
       <div className="ml-auto flex items-center gap-1">
         <ThemeToggle />

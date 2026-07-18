@@ -1,5 +1,6 @@
 import { Role } from '@crm/shared';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { ClientDetailsDrawer } from '@/features/clients/ClientDetailsDrawer';
 import { ClientFormDialog } from '@/features/clients/ClientFormDialog';
 import { ClientsTable } from '@/features/clients/ClientsTable';
@@ -22,6 +23,25 @@ export function ClientsPage() {
   });
   const [deleteTarget, setDeleteTarget] = useState<ClientListItem | null>(null);
   const [drawerClientId, setDrawerClientId] = useState<string | null>(null);
+
+  // Global search (topbar) links here as /clients?clientId=... to open a client straight
+  // into the drawer; the param is consumed once and then dropped from the URL.
+  const [urlSearchParams, setUrlSearchParams] = useSearchParams();
+  useEffect(() => {
+    const paramClientId = urlSearchParams.get('clientId');
+    if (paramClientId !== null) {
+      setDrawerClientId(paramClientId);
+      setUrlSearchParams(
+        (current) => {
+          const next = new URLSearchParams(current);
+          next.delete('clientId');
+          return next;
+        },
+        { replace: true },
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlSearchParams]);
 
   const canMutate = (client: ClientListItem) =>
     user?.role === Role.ADMIN || client.ownerId === user?.id;
