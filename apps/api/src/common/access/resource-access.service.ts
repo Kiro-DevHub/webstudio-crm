@@ -10,7 +10,7 @@ import { SafeUser } from '../types/user.types';
 import { OWNED_RESOURCES, ResourceKind } from './owned-resources';
 
 /**
- * The one implementation of the CLAUDE.md rule: a MANAGER may view everything but
+ * The one implementation of the access rule: a MANAGER may view everything but
  * only mutate what they own; an ADMIN may mutate anything.
  *
  * Every module goes through this service instead of re-deriving the rule, so the

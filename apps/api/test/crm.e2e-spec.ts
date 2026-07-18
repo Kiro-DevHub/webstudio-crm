@@ -236,7 +236,7 @@ describe('CRM CRUD modules (e2e)', () => {
       expect(activities[0].userId).toBe(ownerId);
     });
 
-    it('GET /api/clients returns the paginated shape from CLAUDE.md', async () => {
+    it('GET /api/clients returns the paginated shape from project conventions', async () => {
       const res = await request(server)
         .get('/api/clients')
         .query({ page: 1, limit: 10 })

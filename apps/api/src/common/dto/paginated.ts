@@ -5,7 +5,7 @@ export interface PaginationMeta {
   totalPages: number;
 }
 
-/** The list response shape mandated by CLAUDE.md for every list endpoint. */
+/** The list response shape mandated by project conventions for every list endpoint. */
 export interface Paginated<T> {
   data: T[];
   meta: PaginationMeta;

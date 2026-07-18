@@ -13,8 +13,8 @@ export interface RecordActivityInput {
 }
 
 /**
- * The activity log writer. CLAUDE.md requires an Activity for every deal creation,
- * stage change, task completion and note — this is the only place that writes them,
+ * The activity log writer. Every deal creation, stage change, task completion and
+ * note must write an Activity record (see project conventions) — this is the only place that writes them,
  * and it takes a transaction client so a log entry can never outlive a rolled-back
  * entity (or go missing after a committed one).
  */
